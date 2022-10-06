@@ -10,7 +10,8 @@ import { DateTime } from 'luxon'
 const post: TimelinePost = {
     id: "1",
     created: DateTime.now(),
-    title: "Post 1"
+    title: "Post 1",
+    markdown: '## Title',
 }
 
 </script>
