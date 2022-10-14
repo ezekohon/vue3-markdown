@@ -24,14 +24,15 @@
       />
     </div>
     <div class="column">
-      {{ content }}
+      <div v-html="html"></div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { TimelinePost } from '../posts';
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch, watchEffect } from 'vue'
+import { marked } from "marked"
 
 const props = defineProps<{
     post: TimelinePost
@@ -39,7 +40,14 @@ const props = defineProps<{
 
 const title = ref(props.post.title)
 const content = ref(props.post.markdown)
+const html = ref('')
 const contentEditable = ref<HTMLDivElement>()
+
+watch(content, (newContent) => {
+  marked.parse(newContent, (err, parseResult) => {
+    html.value = parseResult
+  })
+}, {immediate: true})
 
 onMounted(() => {
     if (!contentEditable.value) {
