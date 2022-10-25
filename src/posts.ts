@@ -5,6 +5,7 @@ export interface Post {
   title: string;
   created: string;
   markdown: string;
+  html: string;
 }
 
 export const today: Post = {
@@ -12,6 +13,7 @@ export const today: Post = {
   title: "Today",
   created: DateTime.now().toISO(),
   markdown: "",
+  html: "",
 };
 
 export interface TimelinePost extends Omit<Post, "created"> {
@@ -23,6 +25,7 @@ export const thisWeek: Post = {
   title: "This Week",
   created: DateTime.now().minus({ days: 5 }).toISO(),
   markdown: "",
+  html: "",
 };
 
 export const thisMonth: Post = {
@@ -30,4 +33,5 @@ export const thisMonth: Post = {
   title: "This Month",
   created: DateTime.now().minus({ weeks: 3 }).toISO(),
   markdown: "",
+  html: "",
 };

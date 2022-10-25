@@ -27,6 +27,14 @@
       <div v-html="html"></div>
     </div>
   </div>
+
+  <div class="columns">
+    <div class="column">
+      <button
+        class="button is-primary is-pulled-right"
+        @click="handleClick">Save Post</button>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -34,6 +42,10 @@ import { TimelinePost } from '../posts';
 import { ref, onMounted, watch, watchEffect } from 'vue'
 import { marked } from "marked"
 import highlightjs from "highlight.js"
+import debounce from "lodash/debounce"
+import { usePosts } from "../stores/posts"
+import { useRouter } from "vue-router"
+
 const props = defineProps<{
     post: TimelinePost
 }>()
@@ -43,17 +55,33 @@ const content = ref(props.post.markdown)
 const html = ref('')
 const contentEditable = ref<HTMLDivElement>()
 
-watch(content, (newContent) => {
-  marked.parse(newContent, {
-    gfm: true,
-    breaks: true,
-    highlight: (code) => {
-      return highlightjs.highlightAuto(code).value
+const posts = usePosts()
+const router = useRouter()
+
+function parseHtml(markdown: string) {
+  marked.parse(
+    markdown,
+    {
+      gfm: true,
+      breaks: true,
+      highlight: (code) => {
+        return highlightjs.highlightAuto(code).value;
+      }
+    },
+    (err, parseResult) => {
+      html.value = parseResult;
     }
-  }, (err, parseResult) => {
-    html.value = parseResult
-  })
-}, {immediate: true})
+  );
+}
+watch(
+  content,
+  debounce((newContent) => {
+    parseHtml(newContent);
+  }, 250),
+  {
+    immediate: true
+  }
+);
 
 onMounted(() => {
     if (!contentEditable.value) {
@@ -67,6 +95,17 @@ function handleInput() {
         throw Error('ContentEditable DOM was not found.')
     }
     content.value = contentEditable.value.innerText
+}
+
+async function handleClick() {
+  const newPost: TimelinePost = {
+    ...props.post,
+    title: title.value,
+    markdown: content.value,
+    html: html.value
+  }
+  await posts.createPost(newPost)
+  router.push("/")
 }
 
 
